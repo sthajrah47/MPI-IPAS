@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI IPAS Kelas 3 - Pelestarian Hewan & Tumbuhan Langka</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#22c55e',
+                            darkgreen: '#15803d',
+                            lightgreen: '#dcfce7',
+                            amber: '#f59e0b',
+                            sky: '#0284c7',
+                            brown: '#78350f',
+                            cream: '#fef3c7'
+                        }
+                    },
+                    fontFamily: {
+                        title: ['Fredoka', 'sans-serif'],
+                        body: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+        }
+        h1, h2, h3, h4, .font-title {
+            font-family: 'Fredoka', cursive;
+        }
+        .box-3d {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+        .box-3d:hover {
+            transform: translateY(-8px) scale(1.03);
+        }
+        .box-3d:active {
+            transform: translateY(2px) scale(0.98);
+        }
+        .bounce-gentle {
+            animation: bounceGentle 2s infinite;
+        }
+        @keyframes bounceGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .drag-item {
+            cursor: grab;
+            touch-action: none;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone-active {
+            border-color: #22c55e !important;
+            background-color: #f0fdf4 !important;
+            transform: scale(1.01);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- Navigation Bar -->
+    <header class="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-700 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('materi')">
+                <div class="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md text-amber-300 text-2xl shadow-inner">
+                    <i class="fa-solid fa-tree"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-title tracking-wide text-amber-300 drop-shadow">MPI IPAS KELAS 3 SD</h1>
+                    <p class="text-xs md:text-sm text-emerald-100 font-medium">Pelestarian Hewan & Tumbuhan Langka</p>
+                </div>
+            </div>
+
+            <!-- Score Pill -->
+            <div class="flex items-center gap-4 bg-black/20 px-4 py-1.5 rounded-full border border-white/20">
+                <div class="flex items-center gap-1.5" title="Total Bintang">
+                    <i class="fa-solid fa-star text-amber-300 text-lg"></i>
+                    <span id="global-stars" class="font-bold text-amber-300 text-lg">0</span>
+                </div>
+                <div class="h-4 w-px bg-white/30"></div>
+                <div class="flex items-center gap-1.5" title="Skor Keseluruhan">
+                    <i class="fa-solid fa-trophy text-yellow-400 text-lg"></i>
+                    <span id="global-score" class="font-bold text-white text-lg">0</span>
+                </div>
+            </div>
+
+            <!-- Nav Tabs -->
+            <nav class="flex items-center gap-1 md:gap-2 overflow-x-auto py-1 w-full md:w-auto">
+                <button id="nav-materi" onclick="switchTab('materi')" class="nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition bg-white text-emerald-800 shadow">
+                    <i class="fa-solid fa-book-open"></i> Slide Materi
+                </button>
+                <button id="nav-simulasi" onclick="switchTab('simulasi')" class="nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition hover:bg-white/10 text-white">
+                    <i class="fa-solid fa-earth-americas"></i> Simulasi
+                </button>
+                <button id="nav-openbox" onclick="switchTab('openbox')" class="nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition hover:bg-white/10 text-white">
+                    <i class="fa-solid fa-box-open"></i> Kuis Box (10)
+                </button>
+                <button id="nav-dragdrop" onclick="switchTab('dragdrop')" class="nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition hover:bg-white/10 text-white">
+                    <i class="fa-solid fa-hand-pointer"></i> Drag & Drop (10)
+                </button>
+                <button id="nav-sertifikat" onclick="switchTab('sertifikat')" class="nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition hover:bg-white/10 text-white">
+                    <i class="fa-solid fa-award"></i> Rapor
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Wrapper -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+
+        <!-- SECTION 1: MATERI SLIDES (5 SLIDES) -->
+        <section id="section-materi" class="tab-section">
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-100 overflow-hidden max-w-4xl mx-auto flex flex-col min-h-[580px]">
+                
+                <!-- Slide Header Progress Bar -->
+                <div class="bg-emerald-50 px-6 py-4 border-b border-emerald-100 flex justify-between items-center">
+                    <span class="font-title text-emerald-800 font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-emerald-600"></i> Materi Pembelajaran
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <span id="slide-num-badge" class="bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold">Slide 1 dari 5</span>
+                    </div>
+                </div>
+
+                <!-- Slide Content Area -->
+                <div id="slide-container" class="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                    <!-- Slides loaded via JS -->
+                </div>
+
+                <!-- Slide Controls Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                    <button id="btn-prev-slide" onclick="changeSlide(-1)" class="px-5 py-2.5 rounded-2xl bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+                    </button>
+                    
+                    <!-- Slide Indicators -->
+                    <div class="flex gap-2" id="slide-indicators">
+                        <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+                        <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                        <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                        <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                        <span class="w-3 h-3 rounded-full bg-slate-300"></span>
+                    </div>
+
+                    <button id="btn-next-slide" onclick="changeSlide(1)" class="px-5 py-2.5 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md transition flex items-center gap-2">
+                        Selanjutnya <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: SIMULASI EKOSISTEM HUTAN -->
+        <section id="section-simulasi" class="tab-section hidden">
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-emerald-100 p-6 max-w-5xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Laboratorium Interaktif</span>
+                    <h2 class="text-2xl md:text-3xl font-title text-emerald-900 mt-1">Simulasi Penjaga Hutan Konservasi 🌲</h2>
+                    <p class="text-slate-600 text-sm">Lakukan aksi pelestarian untuk tingkatkan populasi hewan dan kelestarian hutan!</p>
+                </div>
+
+                <!-- Dashboard Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl text-center">
+                        <i class="fa-solid fa-tree text-3xl text-emerald-600 mb-1"></i>
+                        <p class="text-xs text-slate-500 font-bold">Kerapatan Hutan</p>
+                        <h4 id="sim-forest-health" class="text-xl font-title text-slate-800">50%</h4>
+                    </div>
+                    <div class="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl text-center">
+                        <i class="fa-solid fa-hippo text-3xl text-emerald-700 mb-1"></i>
+                        <p class="text-xs text-slate-500 font-bold">Populasi Satwa</p>
+                        <h4 id="sim-animal-pop" class="text-xl font-title text-slate-800">40 Ekor</h4>
+                    </div>
+                    <div class="bg-rose-50 border-2 border-rose-200 p-4 rounded-2xl text-center">
+                        <i class="fa-solid fa-shield-cat text-3xl text-rose-600 mb-1"></i>
+                        <p class="text-xs text-slate-500 font-bold">Ancaman Pemburu</p>
+                        <h4 id="sim-threat-level" class="text-xl font-title text-rose-700">Sedang</h4>
+                    </div>
+                    <div class="bg-sky-50 border-2 border-sky-200 p-4 rounded-2xl text-center">
+                        <i class="fa-solid fa-leaf text-3xl text-sky-600 mb-1"></i>
+                        <p class="text-xs text-slate-500 font-bold">Skor Kelestarian</p>
+                        <h4 id="sim-ecosystem-score" class="text-2xl font-title text-sky-700">50/100</h4>
+                    </div>
+                </div>
+
+                <!-- Interactive Canvas Simulation View -->
+                <div class="relative bg-gradient-to-b from-sky-200 via-emerald-100 to-emerald-200 border-4 border-emerald-600/30 rounded-2xl h-72 md:h-80 overflow-hidden shadow-inner mb-6 flex flex-col justify-end p-4">
+                    
+                    <!-- Alert Banner -->
+                    <div id="sim-alert" class="absolute top-4 left-4 right-4 bg-amber-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 animate-bounce">
+                        <i class="fa-solid fa-triangle-exclamation text-yellow-200"></i>
+                        <span id="sim-alert-text">Perhatian: Ada ancaman pembalakan liar! Segera lakukan penanaman pohon.</span>
+                    </div>
+
+                    <!-- Visual Interactive Ecosystem Layer -->
+                    <div id="sim-visual-layer" class="w-full flex justify-between items-end gap-2 pb-2">
+                        <!-- Trees and animals injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button onclick="doSimAction('plant')" class="p-3.5 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition shadow flex flex-col items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-seedling text-xl"></i>
+                        <span class="text-xs md:text-sm">Tanam Pohon (+15%)</span>
+                    </button>
+                    <button onclick="doSimAction('patrol')" class="p-3.5 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow flex flex-col items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-user-shield text-xl"></i>
+                        <span class="text-xs md:text-sm">Patroli Hutan (-Ancaman)</span>
+                    </button>
+                    <button onclick="doSimAction('breed')" class="p-3.5 rounded-2xl bg-amber-600 text-white font-bold hover:bg-amber-700 transition shadow flex flex-col items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-house-medical text-xl"></i>
+                        <span class="text-xs md:text-sm">Pusat Penangkaran (+Satwa)</span>
+                    </button>
+                    <button onclick="doSimAction('clean')" class="p-3.5 rounded-2xl bg-sky-600 text-white font-bold hover:bg-sky-700 transition shadow flex flex-col items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-broom text-xl"></i>
+                        <span class="text-xs md:text-sm">Bersihkan Sampah (+Kebersihan)</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: KUIS OPEN THE BOX (10 NOMOR) -->
+        <section id="section-openbox" class="tab-section hidden">
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-amber-100 p-6 max-w-5xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Kuis Interaktif 1</span>
+                    <h2 class="text-2xl md:text-3xl font-title text-amber-900 mt-1">🎁 Open The Box (10 Kotak Misteri)</h2>
+                    <p class="text-slate-600 text-sm">Buka setiap kotak untuk menjawab pertanyaan dan dapatkan bintang!</p>
+                </div>
+
+                <!-- Box Grid 10 Boxes -->
+                <div id="box-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                    <!-- 10 boxes generated by JS -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 4: KUIS DRAG AND DROP (10 NOMOR) -->
+        <section id="section-dragdrop" class="tab-section hidden">
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-sky-100 p-6 max-w-5xl mx-auto">
+                <div class="text-center mb-6">
+                    <span class="bg-sky-100 text-sky-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Kuis Interaktif 2</span>
+                    <h2 class="text-2xl md:text-3xl font-title text-sky-900 mt-1">🧩 Kuis Kelompokkan Pelestarian (10 Nomor)</h2>
+                    <p class="text-slate-600 text-sm">Tarik dan lepas (atau klik) kartu ke dalam wadah yang tepat: **IN-SITU** atau **EX-SITU**!</p>
+                </div>
+
+                <!-- Status Progress -->
+                <div class="flex justify-between items-center mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="text-sm font-bold text-slate-700">Kartu Tersisa: <span id="drag-items-left" class="text-emerald-600 font-extrabold text-base">10</span></span>
+                    <button onclick="resetDragQuiz()" class="px-3 py-1.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-300">
+                        <i class="fa-solid fa-rotate-right"></i> Reset Kuis
+                    </button>
+                </div>
+
+                <!-- Drop Targets -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Target 1: IN-SITU -->
+                    <div id="drop-insitu" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'insitu')" class="bg-emerald-50 border-3 border-dashed border-emerald-400 rounded-3xl p-4 min-h-[200px] flex flex-col justify-between transition">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2 text-emerald-900">
+                                <i class="fa-solid fa-tree text-2xl text-emerald-600"></i>
+                                <h3 class="font-title text-lg font-bold">Pelestarian IN-SITU</h3>
+                            </div>
+                            <p class="text-xs text-emerald-700 mb-3">(Pelestarian hewan/tumbuhan di **HABITAT ASLI**)</p>
+                            <div id="zone-insitu-items" class="flex flex-wrap gap-2 min-h-[100px] p-2 bg-white/60 rounded-2xl border border-emerald-200">
+                                <!-- Dropped items go here -->
+                            </div>
+                        </div>
+                        <button onclick="mobileAssignSelected('insitu')" class="mt-3 w-full py-2 bg-emerald-600 text-white rounded-xl font-bold text-xs shadow md:hidden">
+                            + Masukkan Kartu Terpilih Ke In-Situ
+                        </button>
+                    </div>
+
+                    <!-- Target 2: EX-SITU -->
+                    <div id="drop-exsitu" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'exsitu')" class="bg-amber-50 border-3 border-dashed border-amber-400 rounded-3xl p-4 min-h-[200px] flex flex-col justify-between transition">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2 text-amber-900">
+                                <i class="fa-solid fa-building-columns text-2xl text-amber-600"></i>
+                                <h3 class="font-title text-lg font-bold">Pelestarian EX-SITU</h3>
+                            </div>
+                            <p class="text-xs text-amber-700 mb-3">(Pelestarian hewan/tumbuhan di **LUAR HABITAT ASLI**)</p>
+                            <div id="zone-exsitu-items" class="flex flex-wrap gap-2 min-h-[100px] p-2 bg-white/60 rounded-2xl border border-amber-200">
+                                <!-- Dropped items go here -->
+                            </div>
+                        </div>
+                        <button onclick="mobileAssignSelected('exsitu')" class="mt-3 w-full py-2 bg-amber-600 text-white rounded-xl font-bold text-xs shadow md:hidden">
+                            + Masukkan Kartu Terpilih Ke Ex-Situ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Source Cards Bank -->
+                <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                    <h4 class="font-title text-slate-800 font-bold mb-3 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-sky-600"></i> Bank Kartu (Tarik ke kotak di atas atau Klik untuk memilih):
+                    </h4>
+                    <div id="drag-card-bank" class="flex flex-wrap gap-2.5 justify-center">
+                        <!-- Draggable items loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 5: SERTIFIKAT & RAPOR -->
+        <section id="section-sertifikat" class="tab-section hidden">
+            <div class="bg-white rounded-3xl shadow-xl border-4 border-yellow-200 p-6 md:p-8 max-w-3xl mx-auto text-center">
+                <div class="mb-6">
+                    <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-3 shadow-inner">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h2 class="text-3xl font-title text-slate-800">Rapor & Penghargaan Siswa</h2>
+                    <p class="text-slate-600 text-sm">Petualangan Pelestarian Hewan & Tumbuhan Langka</p>
+                </div>
+
+                <!-- Student Name Input -->
+                <div class="max-w-md mx-auto mb-6">
+                    <label class="block text-left text-xs font-bold text-slate-600 mb-1">Nama Lengkap Siswa:</label>
+                    <input type="text" id="student-name-input" oninput="updateCertName()" placeholder="Masukkan Namamu..." value="Siswa Hebat SD" class="w-full px-4 py-3 border-2 border-emerald-300 rounded-2xl font-bold text-center text-emerald-900 focus:outline-none focus:border-emerald-600 shadow-sm">
+                </div>
+
+                <!-- Performance Summary Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                        <p class="text-xs text-slate-500 font-bold">Kuis Open Box</p>
+                        <h4 id="cert-box-score" class="text-xl font-title text-emerald-800">0 / 10</h4>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-2xl border border-sky-200">
+                        <p class="text-xs text-slate-500 font-bold">Kuis Drag & Drop</p>
+                        <h4 id="cert-drag-score" class="text-xl font-title text-sky-800">0 / 10</h4>
+                    </div>
+                    <div class="col-span-2 md:col-span-1 bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                        <p class="text-xs text-slate-500 font-bold">Total Bintang</p>
+                        <h4 id="cert-stars" class="text-xl font-title text-amber-700">⭐ 0</h4>
+                    </div>
+                </div>
+
+                <!-- Printable Certificate Preview -->
+                <div id="printable-certificate" class="bg-gradient-to-br from-amber-50 via-white to-emerald-50 border-8 border-double border-amber-400 p-8 rounded-3xl shadow-lg relative overflow-hidden">
+                    <div class="border-2 border-dashed border-amber-300 p-6 rounded-2xl">
+                        <p class="text-xs font-bold uppercase tracking-widest text-amber-700">Sertifikat Penghargaan</p>
+                        <h3 class="text-2xl md:text-3xl font-title text-emerald-900 mt-2 mb-1">PAHLAWAN PELESTARI ALAM</h3>
+                        <p class="text-xs text-slate-600">Diberikan kepada:</p>
+                        
+                        <h2 id="cert-student-display" class="text-2xl md:text-3xl font-title text-amber-600 my-3 underline decoration-amber-300">Siswa Hebat SD</h2>
+                        
+                        <p class="text-xs md:text-sm text-slate-700 leading-relaxed max-w-lg mx-auto">
+                            Telah berhasil menyelesaikan seluruh materi interaktif, simulasi ekosistem, serta kuis pelestarian hewan dan tumbuhan langka Indonesia IPAS Kelas 3.
+                        </p>
+
+                        <div class="mt-6 flex justify-between items-end text-left pt-4 border-t border-amber-200">
+                            <div>
+                                <p class="text-[10px] text-slate-400">Tanggal: <span id="cert-date">14 Oktober 2026</span></p>
+                                <p class="text-[10px] font-bold text-emerald-700">Mata Pelajaran: IPAS Kelas 3 SD</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl">🌿🦁🌸</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-center gap-3">
+                    <button onclick="window.print()" class="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Cetak / Simpan Sertifikat
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Open The Box Question -->
+    <div id="modal-box-question" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl border-4 border-amber-300 max-w-lg w-full p-6 relative animate-bounce-short">
+            <button onclick="closeBoxModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-2 mb-3">
+                <span id="modal-box-badge" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">Kotak #1</span>
+            </div>
+            <h3 id="modal-box-title" class="text-lg md:text-xl font-title text-slate-800 mb-4">Pertanyaan akan muncul di sini?</h3>
+            <div id="modal-box-options" class="space-y-2.5">
+                <!-- Options injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* WEB AUDIO API SYNTHESIZER FOR SOUND EFFECTS */
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(130, now + 0.25);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'fanfare') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } catch (e) {
+                console.log('Audio playback prevented');
+            }
+        }
+
+        /* GLOBAL APP STATE */
+        let state = {
+            stars: 0,
+            score: 0,
+            currentSlide: 0,
+            boxAnswers: {},
+            boxScore: 0,
+            dragAnswers: {},
+            dragScore: 0,
+            selectedDragCardId: null,
+            sim: {
+                forestHealth: 50,
+                animalPop: 40,
+                threatLevel: 'Sedang',
+                score: 50
+            }
+        };
+
+        /* SLIDE MATERI DATA (5 SLIDES) */
+        const slidesData = [
+            {
+                title: "1. Apa itu Hewan & Tumbuhan Langka?",
+                tag: "Konsep Dasar",
+                bg: "from-emerald-500 to-teal-600",
+                content: `
+                    <div class="grid md:grid-cols-2 gap-6 items-center">
+                        <div>
+                            <h3 class="text-xl font-title text-emerald-900 mb-3">Pengertian Hewan & Tumbuhan Langka</h3>
+                            <p class="text-slate-700 text-sm leading-relaxed mb-3">
+                                <strong>Hewan dan tumbuhan langka</strong> adalah makhluk hidup yang keberadaannya <strong>sangat sedikit</strong> di alam liar dan terancam <strong>punah</strong> (habis sama sekali dari muka bumi).
+                            </p>
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-xl text-xs text-amber-900 mb-3">
+                                <strong>⚠️ Mengapa Bisa Langka?</strong>
+                                <ul class="list-disc ml-4 mt-1 space-y-1">
+                                    <li>Penebangan dan pembakaran hutan liar.</li>
+                                    <li>Perburuan liar oleh manusia.</li>
+                                    <li>Pencemaran lingkungan dan pemanasan global.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-100 rounded-2xl p-6 text-center border-2 border-emerald-200">
+                            <div class="text-6xl mb-2">🐅 🌸 🐘</div>
+                            <p class="text-xs text-emerald-800 font-bold">Indonesia kaya akan ragam hewan & tumbuhan langka yang wajib kita jaga bersama!</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "2. Mengenal Hewan Langka Indonesia",
+                tag: "Satwa Dilindungi",
+                bg: "from-amber-500 to-orange-600",
+                content: `
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🦎</div>
+                            <h4 class="font-title text-amber-900 text-sm">Komodo</h4>
+                            <p class="text-[11px] text-slate-600">Kadal terbesar di dunia. Habitat asli: Pulau Komodo, NTT.</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🦧</div>
+                            <h4 class="font-title text-amber-900 text-sm">Orangutan</h4>
+                            <p class="text-[11px] text-slate-600">Kera berbulu kemerahan. Habitat: Hutan Kalimantan & Sumatra.</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🐅</div>
+                            <h4 class="font-title text-amber-900 text-sm">Harimau Sumatera</h4>
+                            <p class="text-[11px] text-slate-600">Harimau berukuran paling kecil. Khas dengan loreng yang rapat.</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🦏</div>
+                            <h4 class="font-title text-amber-900 text-sm">Badak Bercula Satu</h4>
+                            <p class="text-[11px] text-slate-600">Melindungi cula tunggalnya. Habitat: Taman Nasional Ujung Kulon.</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🦜</div>
+                            <h4 class="font-title text-amber-900 text-sm">Burung Cenderawasih</h4>
+                            <p class="text-[11px] text-slate-600">Dijuluki Burung dari Surga karena keindahan bulunya di Papua.</p>
+                        </div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🐘</div>
+                            <h4 class="font-title text-amber-900 text-sm">Gajah Sumatera</h4>
+                            <p class="text-[11px] text-slate-600">Mamalia darat raksasa yang terancam kehilangan habitat hutan.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "3. Mengenal Tumbuhan Langka Indonesia",
+                tag: "Flora Dilindungi",
+                bg: "from-rose-500 to-pink-600",
+                content: `
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🌺</div>
+                            <h4 class="font-title text-rose-900 text-sm">Rafflesia Arnoldii</h4>
+                            <p class="text-[11px] text-slate-600">Bunga raksasa terbesar di dunia. Mengeluarkan bau menyengat.</p>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🪴</div>
+                            <h4 class="font-title text-rose-900 text-sm">Kantong Semar</h4>
+                            <p class="text-[11px] text-slate-600">Tumbuhan unik yang memangsa serangga dengan kantong khususnya.</p>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🪷</div>
+                            <h4 class="font-title text-rose-900 text-sm">Anggrek Hitam</h4>
+                            <p class="text-[11px] text-slate-600">Anggrek langka berlidah hitam khas dari Kalimantan & Papua.</p>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🪵</div>
+                            <h4 class="font-title text-rose-900 text-sm">Pohon Cendana</h4>
+                            <p class="text-[11px] text-slate-600">Terkenal dengan kayu aromatik yang sangat wangi dari NTT.</p>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🌾</div>
+                            <h4 class="font-title text-rose-900 text-sm">Bunga Bangkai</h4>
+                            <p class="text-[11px] text-slate-600">Memiliki tongkol tinggi menjulang (Amorphophallus titanum).</p>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center hover:shadow-md transition">
+                            <div class="text-4xl mb-1">🌲</div>
+                            <h4 class="font-title text-rose-900 text-sm">Pohon Damar</h4>
+                            <p class="text-[11px] text-slate-600">Dimanfaatkan getahnya, kini makin langka di hutan tropis.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "4. Cara Pelestarian: In-Situ vs Ex-Situ",
+                tag: "Bentuk Pelestarian",
+                bg: "from-sky-500 to-indigo-600",
+                content: `
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4">
+                            <div class="flex items-center gap-2 text-emerald-800 font-title text-base mb-2">
+                                <i class="fa-solid fa-tree text-2xl text-emerald-600"></i>
+                                <span>Pelestarian IN-SITU</span>
+                            </div>
+                            <p class="text-xs text-slate-700 mb-2">Pelestarian yang dilakukan di <strong>HABITAT ASLI</strong> hewan dan tumbuhan berada.</p>
+                            <div class="bg-white p-2.5 rounded-xl border border-emerald-200 text-xs space-y-1">
+                                <div><strong>Contoh Tempat:</strong></div>
+                                <div>• <strong>Taman Nasional</strong> (Taman Nasional Ujung Kulon)</div>
+                                <div>• <strong>Cagar Alam</strong> (Cagar Alam Leuser)</div>
+                                <div>• <strong>Suaka Margasatwa</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+                            <div class="flex items-center gap-2 text-amber-900 font-title text-base mb-2">
+                                <i class="fa-solid fa-building-columns text-2xl text-amber-600"></i>
+                                <span>Pelestarian EX-SITU</span>
+                            </div>
+                            <p class="text-xs text-slate-700 mb-2">Pelestarian yang dilakukan di <strong>LUAR HABITAT ASLI</strong> tempat tinggalnya.</p>
+                            <div class="bg-white p-2.5 rounded-xl border border-amber-200 text-xs space-y-1">
+                                <div><strong>Contoh Tempat:</strong></div>
+                                <div>• <strong>Kebun Binatang</strong> (Kebun Binatang Ragunan)</div>
+                                <div>• <strong>Kebun Raya</strong> (Kebun Raya Bogor)</div>
+                                <div>• <strong>Pusat Penangkaran Satwa</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "5. Peran Kita Sebagai Siswa SD",
+                tag: "Aksi Nyata",
+                bg: "from-teal-500 to-emerald-700",
+                content: `
+                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-5">
+                        <h3 class="text-lg font-title text-emerald-900 mb-3 text-center">Apa yang Bisa Kita Lakukan? ✨</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                                <span class="text-2xl">📝</span>
+                                <div>
+                                    <strong class="text-slate-800">Menghemat Kertas & Pensil:</strong>
+                                    <p class="text-slate-600 mt-0.5">Kertas dibuat dari serat pohon. Menghemat kertas berarti mengurangi penebangan hutan!</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                                <span class="text-2xl">🚫</span>
+                                <div>
+                                    <strong class="text-slate-800">Tidak Membeli Hewan Langka:</strong>
+                                    <p class="text-slate-600 mt-0.5">Jangan memelihara hewan langka yang dilindungi di rumah.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                                <span class="text-2xl">🌱</span>
+                                <div>
+                                    <strong class="text-slate-800">Menanam Pohon di Sekitar:</strong>
+                                    <p class="text-slate-600 mt-0.5">Ikut kegiatan penghijauan di sekolah maupun rumah.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                                <span class="text-2xl">🗣️</span>
+                                <div>
+                                    <strong class="text-slate-800">Mengajak Teman Peduli Alam:</strong>
+                                    <p class="text-slate-600 mt-0.5">Membagikan ilmu tentang perlindungan satwa dan tumbuhan langka.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        /* RENDER SLIDE CONTENT */
+        function renderSlide() {
+            const slide = slidesData[state.currentSlide];
+            const container = document.getElementById('slide-container');
+
+            container.innerHTML = `
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-gradient-to-r ${slide.bg} text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                            ${slide.tag}
+                        </span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-title text-slate-800 mb-4">${slide.title}</h2>
+                    <div>${slide.content}</div>
+                </div>
+            `;
+
+            // Update badges & buttons
+            document.getElementById('slide-num-badge').innerText = `Slide ${state.currentSlide + 1} dari ${slidesData.length}`;
+            document.getElementById('btn-prev-slide').disabled = state.currentSlide === 0;
+
+            if (state.currentSlide === slidesData.length - 1) {
+                document.getElementById('btn-next-slide').innerHTML = `Uji Pemahaman <i class="fa-solid fa-gamepad"></i>`;
+            } else {
+                document.getElementById('btn-next-slide').innerHTML = `Selanjutnya <i class="fa-solid fa-arrow-right"></i>`;
+            }
+
+            // Update Indicator Dots
+            const indicators = document.getElementById('slide-indicators').children;
+            for (let i = 0; i < indicators.length; i++) {
+                if (i === state.currentSlide) {
+                    indicators[i].className = 'w-4 h-3 rounded-full bg-emerald-600 transition-all';
+                } else {
+                    indicators[i].className = 'w-3 h-3 rounded-full bg-slate-300 transition-all';
+                }
+            }
+        }
+
+        function changeSlide(direction) {
+            playSound('click');
+            if (direction === 1 && state.currentSlide === slidesData.length - 1) {
+                switchTab('simulasi');
+                return;
+            }
+            state.currentSlide = Math.max(0, Math.min(slidesData.length - 1, state.currentSlide + direction));
+            renderSlide();
+        }
+
+
+        /* SIMULASI INTERAKTIF LOGIC */
+        function updateSimUI() {
+            document.getElementById('sim-forest-health').innerText = state.sim.forestHealth + '%';
+            document.getElementById('sim-animal-pop').innerText = state.sim.animalPop + ' Ekor';
+            document.getElementById('sim-threat-level').innerText = state.sim.threatLevel;
+            document.getElementById('sim-ecosystem-score').innerText = state.sim.score + '/100';
+
+            // Visual forest rendering
+            const visualLayer = document.getElementById('sim-visual-layer');
+            let treeCount = Math.floor(state.sim.forestHealth / 15);
+            let animalIcons = ['🦧', '🐅', '🐘', '🦏', '🦜', '🦎'];
+
+            let html = '';
+            for (let i = 0; i < treeCount; i++) {
+                html += `<div class="text-4xl md:text-5xl bounce-gentle" style="animation-delay: ${i * 0.2}s">🌲</div>`;
+            }
+
+            let showAnimals = Math.min(animalIcons.length, Math.floor(state.sim.animalPop / 10));
+            for (let i = 0; i < showAnimals; i++) {
+                html += `<div class="text-3xl md:text-4xl">${animalIcons[i]}</div>`;
+            }
+
+            visualLayer.innerHTML = html || `<div class="text-xs text-rose-700 font-bold w-full text-center py-4">Hutan gundul! Ayo tanam pohon segera!</div>`;
+        }
+
+        function doSimAction(action) {
+            playSound('click');
+            const alertText = document.getElementById('sim-alert-text');
+
+            if (action === 'plant') {
+                state.sim.forestHealth = Math.min(100, state.sim.forestHealth + 15);
+                state.sim.score = Math.min(100, state.sim.score + 10);
+                alertText.innerText = "✨ Bagus! Penanaman pohon memperluas habitat satwa!";
+            } else if (action === 'patrol') {
+                state.sim.threatLevel = 'Rendah';
+                state.sim.score = Math.min(100, state.sim.score + 10);
+                alertText.innerText = "👮 Patroli berhasil mengusir pemburu liar dari kawasan konservasi!";
+            } else if (action === 'breed') {
+                state.sim.animalPop += 8;
+                state.sim.score = Math.min(100, state.sim.score + 10);
+                alertText.innerText = "🏥 Penangkaran berhasil melahirkan anak satwa langka baru!";
+            } else if (action === 'clean') {
+                state.sim.score = Math.min(100, state.sim.score + 5);
+                alertText.innerText = "🧹 Hutan menjadi bersih dan sehat bebas dari sampah!";
+            }
+
+            if (state.sim.score >= 100) {
+                playSound('fanfare');
+                alertText.innerText = "🎉 Luar biasa! Ekosistem Hutan Konservasi Sangat Sehat (100%)!";
+            }
+
+            updateSimUI();
+        }
+
+
+        /* KUIS OPEN THE BOX (10 NOMOR) DATA & LOGIC */
+        const boxQuestions = [
+            {
+                q: "1. Mengapa suatu hewan atau tumbuhan dinamakan 'Langka'?",
+                options: [
+                    "Karena harganya sangat mahal",
+                    "Karena jumlahnya sangat sedikit dan terancam habis/punah",
+                    "Karena sering dijual di toko binatang",
+                    "Karena bisa hidup tanpa makan"
+                ],
+                correct: 1
+            },
+            {
+                q: "2. Burung indah berbulu warna-warni dari Papua yang terancam langka adalah...",
+                options: ["Burung Merpati", "Burung Cenderawasih", "Burung Gereja", "Burung Elang"],
+                correct: 1
+            },
+            {
+                q: "3. Pelestarian hewan/tumbuhan yang dilakukan langsung di HABITAT ASLINYA disebut...",
+                options: ["Pelestarian Ex-Situ", "Pelestarian In-Situ", "Penangkaran Kota", "Kebun Raya"],
+                correct: 1
+            },
+            {
+                q: "4. Kebun Binatang Ragunan dan Kebun Raya Bogor adalah contoh pelestarian...",
+                options: ["In-Situ", "Ex-Situ", "Impor", "Ekosistem Alami"],
+                correct: 1
+            },
+            {
+                q: "5. Bunga raksasa unik yang mengeluarkan bau menyengat khas Indonesia adalah...",
+                options: ["Bunga Melati", "Bunga Mawar", "Rafflesia Arnoldii", "Bunga Anggrek"],
+                correct: 2
+            },
+            {
+                q: "6. Kegiatan manusia berikut yang MERUSAK kelestarian hewan langka adalah...",
+                options: [
+                    "Melakukan perburuan liar dan penebangan hutan",
+                    "Menanam bibit pohon baru",
+                    "Mendirikan Taman Nasional",
+                    "Menghemat penggunaan kertas"
+                ],
+                correct: 0
+            },
+            {
+                q: "7. Mengapa menghemat penggunaan kertas sekolah dapat membantu kelestarian hutan?",
+                options: [
+                    "Karena kertas terbuat dari plastik",
+                    "Karena kertas terbuat dari serat kayu pohon hutan",
+                    "Karena kertas susah dibeli",
+                    "Karena kertas bikin rumah kotor"
+                ],
+                correct: 1
+            },
+            {
+                q: "8. Taman Nasional Ujung Kulon didirikan secara khusus untuk melindungi...",
+                options: ["Komodo", "Badak Bercula Satu", "Gajah Sumatera", "Orangutan"],
+                correct: 1
+            },
+            {
+                q: "9. Tumbuhan unik yang memiliki kantong perangkap untuk memangsa serangga adalah...",
+                options: ["Kantong Semar", "Anggrek Hitam", "Pohon Cendana", "Pohon Damar"],
+                correct: 0
+            },
+            {
+                q: "10. Sikap yang BENAR jika melihat orang menjual hewan langka secara ilegal adalah...",
+                options: [
+                    "Membelinya untuk dijadikan mainan",
+                    "Melaporkannya kepada pihak berwajib / petugas hutan",
+                    "Membiarkannya saja",
+                    "Ikut menangkap hewan tersebut"
+                ],
+                correct: 1
+            }
+        ];
+
+        let currentActiveBoxIndex = null;
+
+        function renderBoxGrid() {
+            const grid = document.getElementById('box-grid');
+            grid.innerHTML = '';
+
+            boxQuestions.forEach((q, idx) => {
+                const isAnswered = state.boxAnswers.hasOwnProperty(idx);
+                const isCorrect = state.boxAnswers[idx] === true;
+
+                let boxBg = 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-200';
+                let boxIcon = `<i class="fa-solid fa-gift text-3xl"></i>`;
+                let statusBadge = `Kotak #${idx + 1}`;
+
+                if (isAnswered) {
+                    if (isCorrect) {
+                        boxBg = 'bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-emerald-200';
+                        boxIcon = `<i class="fa-solid fa-circle-check text-4xl"></i>`;
+                        statusBadge = 'Benar (+10)';
+                    } else {
+                        boxBg = 'bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-rose-200';
+                        boxIcon = `<i class="fa-solid fa-circle-xmark text-4xl"></i>`;
+                        statusBadge = 'Salah (0)';
+                    }
+                }
+
+                const boxEl = document.createElement('div');
+                boxEl.className = `box-3d p-4 rounded-2xl ${boxBg} border-2 border-white/40 shadow-lg flex flex-col items-center justify-center cursor-pointer min-h-[120px] text-center relative overflow-hidden`;
+                boxEl.onclick = () => openBoxModal(idx);
+
+                boxEl.innerHTML = `
+                    <div class="mb-1">${boxIcon}</div>
+                    <span class="font-title text-base font-bold">${statusBadge}</span>
+                `;
+
+                grid.appendChild(boxEl);
+            });
+        }
+
+        function openBoxModal(index) {
+            playSound('click');
+            currentActiveBoxIndex = index;
+            const qData = boxQuestions[index];
+
+            document.getElementById('modal-box-badge').innerText = `Kotak Kuis #${index + 1}`;
+            document.getElementById('modal-box-title').innerText = qData.q;
+
+            const optionsContainer = document.getElementById('modal-box-options');
+            optionsContainer.innerHTML = '';
+
+            const isAlreadyAnswered = state.boxAnswers.hasOwnProperty(index);
+
+            qData.options.forEach((opt, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-3.5 rounded-xl border-2 font-semibold text-sm transition flex items-center justify-between ${
+                    isAlreadyAnswered 
+                    ? (optIdx === qData.correct ? 'bg-emerald-100 border-emerald-500 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-400')
+                    : 'bg-slate-50 border-slate-200 hover:border-amber-400 hover:bg-amber-50 text-slate-800'
+                }`;
+
+                btn.disabled = isAlreadyAnswered;
+                btn.innerHTML = `<span>${opt}</span>`;
+
+                if (!isAlreadyAnswered) {
+                    btn.onclick = () => submitBoxAnswer(index, optIdx);
+                }
+
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('modal-box-question').classList.remove('hidden');
+        }
+
+        function closeBoxModal() {
+            document.getElementById('modal-box-question').classList.add('hidden');
+        }
+
+        function submitBoxAnswer(boxIdx, selectedOptIdx) {
+            const qData = boxQuestions[boxIdx];
+            const isCorrect = selectedOptIdx === qData.correct;
+
+            state.boxAnswers[boxIdx] = isCorrect;
+
+            if (isCorrect) {
+                playSound('correct');
+                state.stars += 1;
+                state.score += 10;
+                state.boxScore += 1;
+            } else {
+                playSound('wrong');
+            }
+
+            updateGlobalHeaderScore();
+            renderBoxGrid();
+            openBoxModal(boxIdx); // Refresh modal to show correct answer
+        }
+
+
+        /* KUIS DRAG & DROP (10 NOMOR) DATA & LOGIC */
+        const dragItemsData = [
+            { id: 'd1', label: 'Taman Nasional Ujung Kulon', category: 'insitu', icon: '🏞️' },
+            { id: 'd2', label: 'Kebun Binatang Ragunan', category: 'exsitu', icon: '🦁' },
+            { id: 'd3', label: 'Suaka Margasatwa Komodo', category: 'insitu', icon: '🦎' },
+            { id: 'd4', label: 'Kebun Raya Bogor', category: 'exsitu', icon: '🌺' },
+            { id: 'd5', label: 'Cagar Alam Leuser', category: 'insitu', icon: '🌲' },
+            { id: 'd6', label: 'Pusat Penangkaran Penyu', category: 'exsitu', icon: '🐢' },
+            { id: 'd7', label: 'Taman Nasional Tanjung Puting', category: 'insitu', icon: '🦧' },
+            { id: 'd8', label: 'Taman Safari Indonesia', category: 'exsitu', icon: '🦛' },
+            { id: 'd9', label: 'Hutan Lindung Kalimantan', category: 'insitu', icon: '🌴' },
+            { id: 'd10', label: 'Akuarium Konservasi Laut', category: 'exsitu', icon: '🐠' }
+        ];
+
+        function renderDragQuiz() {
+            const cardBank = document.getElementById('drag-card-bank');
+            const insituZone = document.getElementById('zone-insitu-items');
+            const exsituZone = document.getElementById('zone-exsitu-items');
+
+            cardBank.innerHTML = '';
+            insituZone.innerHTML = '';
+            exsituZone.innerHTML = '';
+
+            let leftCount = 0;
+
+            dragItemsData.forEach(item => {
+                const assignedZone = state.dragAnswers[item.id];
+
+                const card = document.createElement('div');
+                const isSelected = state.selectedDragCardId === item.id;
+
+                card.id = `card-${item.id}`;
+                card.draggable = true;
+                card.ondragstart = (e) => handleDragStart(e, item.id);
+                card.onclick = () => selectDragCardMobile(item.id);
+
+                card.className = `drag-item px-3 py-2 rounded-xl text-xs font-bold border-2 transition shadow-sm flex items-center gap-1.5 ${
+                    isSelected ? 'ring-4 ring-sky-400 border-sky-500 bg-sky-100 scale-105' : 'border-slate-300 bg-white hover:border-sky-400 text-slate-800'
+                }`;
+
+                card.innerHTML = `<span>${item.icon}</span> <span>${item.label}</span>`;
+
+                if (!assignedZone) {
+                    cardBank.appendChild(card);
+                    leftCount++;
+                } else if (assignedZone === 'insitu') {
+                    card.className += ' bg-emerald-100 border-emerald-400 text-emerald-900';
+                    insituZone.appendChild(card);
+                } else if (assignedZone === 'exsitu') {
+                    card.className += ' bg-amber-100 border-amber-400 text-amber-900';
+                    exsituZone.appendChild(card);
+                }
+            });
+
+            document.getElementById('drag-items-left').innerText = leftCount;
+
+            // Evaluate Score
+            calculateDragScore();
+        }
+
+        function handleDragStart(ev, id) {
+            ev.dataTransfer.setData("text/plain", id);
+            state.selectedDragCardId = id;
+        }
+
+        function handleDragOver(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drop-zone-active');
+        }
+
+        function handleDragLeave(ev) {
+            ev.currentTarget.classList.remove('drop-zone-active');
+        }
+
+        function handleDrop(ev, targetZone) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drop-zone-active');
+
+            const itemId = ev.dataTransfer.getData("text/plain") || state.selectedDragCardId;
+            if (itemId) {
+                assignItemToZone(itemId, targetZone);
+            }
+        }
+
+        function selectDragCardMobile(id) {
+            playSound('click');
+            state.selectedDragCardId = (state.selectedDragCardId === id) ? null : id;
+            renderDragQuiz();
+        }
+
+        function mobileAssignSelected(targetZone) {
+            if (!state.selectedDragCardId) {
+                alert('Pilih/klik salah satu kartu di bawah dulu ya!');
+                return;
+            }
+            assignItemToZone(state.selectedDragCardId, targetZone);
+        }
+
+        function assignItemToZone(itemId, targetZone) {
+            const item = dragItemsData.find(d => d.id === itemId);
+            if (!item) return;
+
+            const isCorrect = item.category === targetZone;
+            const previousAssignment = state.dragAnswers[itemId];
+
+            if (previousAssignment === undefined) {
+                if (isCorrect) {
+                    playSound('correct');
+                    state.stars += 1;
+                    state.score += 10;
+                } else {
+                    playSound('wrong');
+                }
+            }
+
+            state.dragAnswers[itemId] = targetZone;
+            state.selectedDragCardId = null;
+
+            updateGlobalHeaderScore();
+            renderDragQuiz();
+        }
+
+        function calculateDragScore() {
+            let correct = 0;
+            dragItemsData.forEach(item => {
+                if (state.dragAnswers[item.id] === item.category) {
+                    correct++;
+                }
+            });
+            state.dragScore = correct;
+            document.getElementById('cert-drag-score').innerText = `${correct} / 10`;
+        }
+
+        function resetDragQuiz() {
+            playSound('click');
+            state.dragAnswers = {};
+            state.selectedDragCardId = null;
+            renderDragQuiz();
+        }
+
+
+        /* GLOBAL SCORE & NAVIGATION LOGIC */
+        function updateGlobalHeaderScore() {
+            document.getElementById('global-stars').innerText = state.stars;
+            document.getElementById('global-score').innerText = state.score;
+
+            // Certificate tab updates
+            document.getElementById('cert-box-score').innerText = `${state.boxScore} / 10`;
+            document.getElementById('cert-stars').innerText = `⭐ ${state.stars}`;
+        }
+
+        function switchTab(tabName) {
+            playSound('click');
+
+            // Hide all
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+            
+            // Unhighlight navs
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition hover:bg-white/10 text-white';
+            });
+
+            // Show selected
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = 'nav-btn px-3.5 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 transition bg-white text-emerald-800 shadow';
+            }
+
+            if (tabName === 'sertifikat') {
+                if (state.stars >= 15) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            }
+        }
+
+        function updateCertName() {
+            const val = document.getElementById('student-name-input').value || 'Siswa Hebat SD';
+            document.getElementById('cert-student-display').innerText = val;
+        }
+
+        // Initialize Application
+        window.onload = function() {
+            renderSlide();
+            updateSimUI();
+            renderBoxGrid();
+            renderDragQuiz();
+
+            // Set Certificate Date
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('cert-date').innerText = dateStr;
+        };
+    </script>
+</body>
+</html>
